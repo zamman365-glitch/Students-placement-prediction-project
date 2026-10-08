@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Placement Predictor | Enterprise Decision Tree</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <div class="app-wrapper">
+    
+    <!-- Top Header Navigation -->
+    <header class="navbar">
+      <div class="brand-wrapper">
+        <div class="brand-badge-icon">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div class="brand-details">
+          <h1>
+            Placement Analytics
+            <span class="model-pill">Decision Tree ML</span>
+          </h1>
+          <p>Student employability forecasting & performance evaluation system</p>
+        </div>
+      </div>
+
+      <div class="navbar-controls">
+        <!-- Preset Profiles Strip -->
+        <div class="preset-strip">
+          <span class="preset-title"><i class="fa-solid fa-bolt"></i> Presets:</span>
+          <button type="button" onclick="loadPreset('star')" class="preset-chip star">
+            <i class="fa-solid fa-circle-check"></i> High Achiever
+          </button>
+          <button type="button" onclick="loadPreset('average')" class="preset-chip avg">
+            <i class="fa-solid fa-user"></i> Average
+          </button>
+          <button type="button" onclick="loadPreset('risk')" class="preset-chip risk">
+            <i class="fa-solid fa-triangle-exclamation"></i> Needs Support
+          </button>
+        </div>
+
+        <!-- API Config Button -->
+        <button type="button" id="apiConfigBtn" class="api-config-btn" title="Configure Backend API URL">
+          <i class="fa-solid fa-server"></i>
+          <span>API Config</span>
+        </button>
+
+        <!-- Light / Dark Mode Toggle Button -->
+        <button type="button" id="themeToggleBtn" class="theme-switch-btn" aria-label="Toggle Theme">
+          <i class="fa-solid fa-sun"></i>
+          <span>Light Mode</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Grid -->
+    <main class="dashboard-grid">
+      
+      <!-- Left Panel: Input Configuration -->
+      <section class="card-panel">
+        <form id="predictionForm">
+          
+          <!-- Section 1: Demographics & Branch -->
+          <div class="form-fieldset">
+            <div class="card-header-bar">
+              <div class="panel-title">
+                <i class="fa-solid fa-user-graduate"></i>
+                <span>Student Demographics & Stream</span>
+              </div>
+              <span class="panel-subtitle">Base Profile</span>
+            </div>
+
+            <div class="form-row-3">
+              <!-- Gender -->
+              <div class="field-group">
+                <label for="gender" class="field-label">Gender</label>
+                <select id="gender" name="gender" class="custom-select" required>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+
+              <!-- Branch -->
+              <div class="field-group">
+                <label for="branch" class="field-label">Branch / Major</label>
+                <select id="branch" name="branch" class="custom-select" required>
+                  <option value="CSE">CSE (Computer Science)</option>
+                  <option value="IT">IT (Information Tech)</option>
+                  <option value="ECE">ECE (Electronics)</option>
+                  <option value="MECHANICAL">Mechanical (ME)</option>
+                  <option value="CIVIL">Civil (CE)</option>
+                  <option value="COMMERCE">Commerce</option>
+                </select>
+              </div>
+
+              <!-- Extracurricular Activities -->
+              <div class="field-group">
+                <label for="extracurricular" class="field-label">Extracurriculars</label>
+                <select id="extracurricular" name="extracurricular" class="custom-select" required>
+                  <option value="Yes">Yes (Active)</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Study Habits & Routine -->
+          <div class="form-fieldset">
+            <div class="card-header-bar">
+              <div class="panel-title">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Daily Schedule & Habit Metrics</span>
+              </div>
+              <span class="panel-subtitle">Effort Allocation</span>
+            </div>
+
+            <div class="form-row-3">
+              <!-- Study Hours -->
+              <div class="stepper-card">
+                <div class="stepper-header">
+                  <span class="stepper-label">Study Hours</span>
+                  <div class="stepper-controls">
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('study_hours', -0.5)" title="Decrease Study Hours" aria-label="Decrease Study Hours">−</button>
+                    <span id="study_hours_badge" class="stepper-numeric-badge">8.5 hrs</span>
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('study_hours', 0.5)" title="Increase Study Hours" aria-label="Increase Study Hours">+</button>
+                  </div>
+                </div>
+                <input type="range" id="study_hours" min="0" max="14" step="0.5" value="8.5" />
+                <div class="range-minmax">
+                  <span>0 hrs</span>
+                  <span>14 hrs</span>
+                </div>
+              </div>
+
+              <!-- Sleep Hours -->
+              <div class="stepper-card">
+                <div class="stepper-header">
+                  <span class="stepper-label">Sleep Hours</span>
+                  <div class="stepper-controls">
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('sleep_hours', -0.5)" title="Decrease Sleep Hours" aria-label="Decrease Sleep Hours">−</button>
+                    <span id="sleep_hours_badge" class="stepper-numeric-badge">7.5 hrs</span>
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('sleep_hours', 0.5)" title="Increase Sleep Hours" aria-label="Increase Sleep Hours">+</button>
+                  </div>
+                </div>
+                <input type="range" id="sleep_hours" min="3" max="12" step="0.5" value="7.5" />
+                <div class="range-minmax">
+                  <span>3 hrs</span>
+                  <span>12 hrs</span>
+                </div>
+              </div>
+
+              <!-- Internet Usage -->
+              <div class="stepper-card">
+                <div class="stepper-header">
+                  <span class="stepper-label">Internet Usage</span>
+                  <div class="stepper-controls">
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('internet_usage', -0.5)" title="Decrease Internet Usage" aria-label="Decrease Internet Usage">−</button>
+                    <span id="internet_usage_badge" class="stepper-numeric-badge">2.0 hrs</span>
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('internet_usage', 0.5)" title="Increase Internet Usage" aria-label="Increase Internet Usage">+</button>
+                  </div>
+                </div>
+                <input type="range" id="internet_usage" min="0" max="14" step="0.5" value="2.0" />
+                <div class="range-minmax">
+                  <span>0 hrs</span>
+                  <span>14 hrs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Academic Performance -->
+          <div class="form-fieldset">
+            <div class="card-header-bar">
+              <div class="panel-title">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Academic Scores & Evaluations</span>
+              </div>
+              <span class="panel-subtitle">Direct Indicators</span>
+            </div>
+
+            <div class="form-row-2">
+              <!-- Attendance -->
+              <div class="stepper-card">
+                <div class="stepper-header">
+                  <span class="stepper-label">Attendance Rate</span>
+                  <div class="stepper-controls">
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('attendance', -1)" title="Decrease Attendance" aria-label="Decrease Attendance">−</button>
+                    <span id="attendance_badge" class="stepper-numeric-badge">92%</span>
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('attendance', 1)" title="Increase Attendance" aria-label="Increase Attendance">+</button>
+                  </div>
+                </div>
+                <input type="range" id="attendance" min="0" max="100" step="1" value="92" />
+                <div class="range-minmax">
+                  <span>0%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+
+              <!-- Assignments Completed -->
+              <div class="stepper-card">
+                <div class="stepper-header">
+                  <span class="stepper-label">Assignments Done</span>
+                  <div class="stepper-controls">
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('assignments_completed', -1)" title="Decrease Assignments" aria-label="Decrease Assignments">−</button>
+                    <span id="assignments_completed_badge" class="stepper-numeric-badge">14</span>
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('assignments_completed', 1)" title="Increase Assignments" aria-label="Increase Assignments">+</button>
+                  </div>
+                </div>
+                <input type="range" id="assignments_completed" min="0" max="20" step="1" value="14" />
+                <div class="range-minmax">
+                  <span>0</span>
+                  <span>20</span>
+                </div>
+              </div>
+
+              <!-- Previous Score -->
+              <div class="stepper-card">
+                <div class="stepper-header">
+                  <span class="stepper-label">Previous Semester Score</span>
+                  <div class="stepper-controls">
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('previous_score', -1)" title="Decrease Previous Score" aria-label="Decrease Previous Score">−</button>
+                    <span id="previous_score_badge" class="stepper-numeric-badge">88%</span>
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('previous_score', 1)" title="Increase Previous Score" aria-label="Increase Previous Score">+</button>
+                  </div>
+                </div>
+                <input type="range" id="previous_score" min="0" max="100" step="0.5" value="88" />
+                <div class="range-minmax">
+                  <span>0%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+
+              <!-- Final Exam Score -->
+              <div class="stepper-card">
+                <div class="stepper-header">
+                  <span class="stepper-label">Final Exam Score</span>
+                  <div class="stepper-controls">
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('exam_score', -1)" title="Decrease Final Score" aria-label="Decrease Final Score">−</button>
+                    <span id="exam_score_badge" class="stepper-numeric-badge">91%</span>
+                    <button type="button" class="stepper-action-btn" onclick="stepValue('exam_score', 1)" title="Increase Final Score" aria-label="Increase Final Score">+</button>
+                  </div>
+                </div>
+                <input type="range" id="exam_score" min="0" max="100" step="0.5" value="91" />
+                <div class="range-minmax">
+                  <span>0%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-strip">
+            <button type="submit" id="submitBtn" class="btn-accent-cta">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>Evaluate Placement Likelihood</span>
+            </button>
+            <button type="button" onclick="resetForm()" class="btn-neutral-reset">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span>Reset</span>
+            </button>
+          </div>
+
+        </form>
+      </section>
+
+      <!-- Right Panel: Prediction Results & Insights -->
+      <section class="result-column">
+        
+        <div class="card-panel">
+          <!-- Card Header -->
+          <div class="card-header-bar">
+            <div class="panel-title">
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>Prediction Result</span>
+            </div>
+            <span class="model-pill">DecisionTreeClassifier</span>
+          </div>
+
+          <!-- State 1: Placeholder -->
+          <div id="emptyState" class="state-placeholder hidden">
+            <div class="placeholder-icon">
+              <i class="fa-solid fa-brain"></i>
+            </div>
+            <h3>Ready for Analysis</h3>
+            <p>Configure student parameters on the left or select a preset to generate an assessment.</p>
+          </div>
+
+          <!-- State 2: Evaluating Loader -->
+          <div id="loadingState" class="state-evaluating hidden">
+            <div class="loader-ring"></div>
+            <p>Evaluating feature thresholds...</p>
+          </div>
+
+          <!-- State 3: Active Result Display -->
+          <div id="resultDisplay" class="outcome-wrapper">
+            
+            <!-- Result Banner (Placed / Not Placed) -->
+            <div id="outcomeBanner" class="outcome-status-card placed">
+              <div id="outcomeIcon" class="outcome-icon-circle">
+                <i class="fa-solid fa-check"></i>
+              </div>
+              <span id="outcomePill" class="outcome-subtext">High Potential Forecast</span>
+              <h2 id="outcomeTitle" class="outcome-heading">Placed</h2>
+              <p id="outcomeDesc" class="outcome-summary">
+                Student metrics meet required placement benchmarks with consistent habits.
+              </p>
+            </div>
+
+            <!-- Probability Meter -->
+            <div class="probability-meter-card">
+              <div class="meter-header">
+                <span>Placement Likelihood</span>
+                <span id="probabilityValue" class="meter-percentage">92.5%</span>
+              </div>
+              <div class="meter-track">
+                <div id="probabilityFill" class="meter-bar placed" style="width: 92.5%;"></div>
+              </div>
+            </div>
+
+            <!-- Actionable Feedback Insights -->
+            <div class="insights-card">
+              <div class="insights-title">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>Key Feedback & Action Items</span>
+              </div>
+              <ul id="insightsList" class="insights-items">
+                <!-- Injected via JavaScript -->
+              </ul>
+            </div>
+
+          </div>
+
+          <!-- Error Alert Banner -->
+          <div id="errorBanner" class="alert-error hidden">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="errorMessage">Unable to communicate with the prediction model.</span>
+          </div>
+
+        </div>
+
+        <!-- System Status Bar -->
+        <div class="system-meta-bar">
+          <span>Decision Tree v1.0 &bull; Scikit-Learn</span>
+          <div class="live-indicator">
+            <span class="pulse-dot"></span>
+            <span>Model Active</span>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- JavaScript Controller -->
+  <script src="./script.js"></script>
+</body>
+</html>
