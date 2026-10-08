@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Placement Predictor | ML Decision Tree</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Top Header & Navigation -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-icon">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div class="brand-text">
+          <h1>
+            Student Placement Predictor
+            <span class="badge-tag">Decision Tree ML</span>
+          </h1>
+          <p>Evaluate campus placement likelihood using machine learning predictive metrics</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Quick Profile Presets -->
+        <div class="presets-group">
+          <span class="preset-label"><i class="fa-solid fa-bolt"></i> Presets:</span>
+          <button type="button" onclick="loadPreset('star')" class="preset-btn star">
+            <i class="fa-solid fa-star"></i> Star Student
+          </button>
+          <button type="button" onclick="loadPreset('average')" class="preset-btn avg">
+            <i class="fa-solid fa-user"></i> Average
+          </button>
+          <button type="button" onclick="loadPreset('risk')" class="preset-btn risk">
+            <i class="fa-solid fa-triangle-exclamation"></i> At Risk
+          </button>
+        </div>
+
+        <!-- Light / Dark Mode Toggle Button -->
+        <button type="button" id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Theme">
+          <i class="fa-solid fa-sun"></i>
+          <span>Light Mode</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Grid Content -->
+    <main class="main-layout">
+      
+      <!-- Left Column: Prediction Input Form -->
+      <section class="card">
+        <form id="predictionForm">
+          
+          <!-- Section 1: Demographics & Stream -->
+          <div class="form-section">
+            <div class="section-title">
+              <i class="fa-solid fa-user-graduate"></i>
+              <span>Academic & Student Profile</span>
+            </div>
+
+            <div class="form-grid-3">
+              <!-- Gender -->
+              <div class="input-group">
+                <label for="gender" class="input-label">Gender</label>
+                <select id="gender" name="gender" class="select-control" required>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+
+              <!-- Branch / Stream -->
+              <div class="input-group">
+                <label for="branch" class="input-label">Branch / Department</label>
+                <select id="branch" name="branch" class="select-control" required>
+                  <option value="CSE">CSE (Computer Science)</option>
+                  <option value="IT">IT (Information Tech)</option>
+                  <option value="ECE">ECE (Electronics)</option>
+                  <option value="MECHANICAL">Mechanical (ME)</option>
+                  <option value="CIVIL">Civil (CE)</option>
+                  <option value="COMMERCE">Commerce</option>
+                </select>
+              </div>
+
+              <!-- Extracurricular Activities -->
+              <div class="input-group">
+                <label for="extracurricular" class="input-label">Extracurriculars</label>
+                <select id="extracurricular" name="extracurricular" class="select-control" required>
+                  <option value="Yes">Yes (Active)</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Daily Schedule & Habit Metrics -->
+          <div class="form-section" style="margin-top: 24px;">
+            <div class="section-title">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>Daily Habits & Routine</span>
+            </div>
+
+            <div class="form-grid-3">
+              <!-- Study Hours with + / - Buttons -->
+              <div class="slider-field-card">
+                <div class="slider-header">
+                  <span class="slider-title">Study Hours / Day</span>
+                  <div class="stepper-control">
+                    <button type="button" class="stepper-btn" onclick="stepValue('study_hours', -0.5)" title="Decrease" aria-label="Decrease Study Hours">−</button>
+                    <span id="study_hours_badge" class="slider-badge">8.5 hrs</span>
+                    <button type="button" class="stepper-btn" onclick="stepValue('study_hours', 0.5)" title="Increase" aria-label="Increase Study Hours">+</button>
+                  </div>
+                </div>
+                <input type="range" id="study_hours" min="0" max="14" step="0.5" value="8.5" />
+                <div class="slider-limits">
+                  <span>0 hrs</span>
+                  <span>7 hrs</span>
+                  <span>14 hrs</span>
+                </div>
+              </div>
+
+              <!-- Sleep Hours with + / - Buttons -->
+              <div class="slider-field-card">
+                <div class="slider-header">
+                  <span class="slider-title">Sleep Hours / Day</span>
+                  <div class="stepper-control">
+                    <button type="button" class="stepper-btn" onclick="stepValue('sleep_hours', -0.5)" title="Decrease" aria-label="Decrease Sleep Hours">−</button>
+                    <span id="sleep_hours_badge" class="slider-badge">7.5 hrs</span>
+                    <button type="button" class="stepper-btn" onclick="stepValue('sleep_hours', 0.5)" title="Increase" aria-label="Increase Sleep Hours">+</button>
+                  </div>
+                </div>
+                <input type="range" id="sleep_hours" min="3" max="12" step="0.5" value="7.5" />
+                <div class="slider-limits">
+                  <span>3 hrs</span>
+                  <span>7.5 hrs</span>
+                  <span>12 hrs</span>
+                </div>
+              </div>
+
+              <!-- Internet Usage with + / - Buttons -->
+              <div class="slider-field-card">
+                <div class="slider-header">
+                  <span class="slider-title">Daily Internet</span>
+                  <div class="stepper-control">
+                    <button type="button" class="stepper-btn" onclick="stepValue('internet_usage', -0.5)" title="Decrease" aria-label="Decrease Internet Usage">−</button>
+                    <span id="internet_usage_badge" class="slider-badge">2.0 hrs</span>
+                    <button type="button" class="stepper-btn" onclick="stepValue('internet_usage', 0.5)" title="Increase" aria-label="Increase Internet Usage">+</button>
+                  </div>
+                </div>
+                <input type="range" id="internet_usage" min="0" max="14" step="0.5" value="2.0" />
+                <div class="slider-limits">
+                  <span>0 hrs</span>
+                  <span>7 hrs</span>
+                  <span>14 hrs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Performance Scores -->
+          <div class="form-section" style="margin-top: 24px;">
+            <div class="section-title">
+              <i class="fa-solid fa-chart-simple"></i>
+              <span>Academic Performance</span>
+            </div>
+
+            <div class="form-grid-2">
+              <!-- Attendance with + / - Buttons -->
+              <div class="slider-field-card">
+                <div class="slider-header">
+                  <span class="slider-title">Attendance Rate</span>
+                  <div class="stepper-control">
+                    <button type="button" class="stepper-btn" onclick="stepValue('attendance', -1)" title="Decrease" aria-label="Decrease Attendance">−</button>
+                    <span id="attendance_badge" class="slider-badge">92%</span>
+                    <button type="button" class="stepper-btn" onclick="stepValue('attendance', 1)" title="Increase" aria-label="Increase Attendance">+</button>
+                  </div>
+                </div>
+                <input type="range" id="attendance" min="0" max="100" step="1" value="92" />
+                <div class="slider-limits">
+                  <span>0%</span>
+                  <span>50%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+
+              <!-- Assignments Completed with + / - Buttons -->
+              <div class="slider-field-card">
+                <div class="slider-header">
+                  <span class="slider-title">Assignments Done</span>
+                  <div class="stepper-control">
+                    <button type="button" class="stepper-btn" onclick="stepValue('assignments_completed', -1)" title="Decrease" aria-label="Decrease Assignments">−</button>
+                    <span id="assignments_completed_badge" class="slider-badge">14</span>
+                    <button type="button" class="stepper-btn" onclick="stepValue('assignments_completed', 1)" title="Increase" aria-label="Increase Assignments">+</button>
+                  </div>
+                </div>
+                <input type="range" id="assignments_completed" min="0" max="20" step="1" value="14" />
+                <div class="slider-limits">
+                  <span>0</span>
+                  <span>10</span>
+                  <span>20</span>
+                </div>
+              </div>
+
+              <!-- Previous Semester Score with + / - Buttons -->
+              <div class="slider-field-card">
+                <div class="slider-header">
+                  <span class="slider-title">Previous Score</span>
+                  <div class="stepper-control">
+                    <button type="button" class="stepper-btn" onclick="stepValue('previous_score', -1)" title="Decrease" aria-label="Decrease Previous Score">−</button>
+                    <span id="previous_score_badge" class="slider-badge">88%</span>
+                    <button type="button" class="stepper-btn" onclick="stepValue('previous_score', 1)" title="Increase" aria-label="Increase Previous Score">+</button>
+                  </div>
+                </div>
+                <input type="range" id="previous_score" min="0" max="100" step="0.5" value="88" />
+                <div class="slider-limits">
+                  <span>0%</span>
+                  <span>50%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+
+              <!-- Final Exam Score with + / - Buttons -->
+              <div class="slider-field-card">
+                <div class="slider-header">
+                  <span class="slider-title">Final Exam Score</span>
+                  <div class="stepper-control">
+                    <button type="button" class="stepper-btn" onclick="stepValue('exam_score', -1)" title="Decrease" aria-label="Decrease Exam Score">−</button>
+                    <span id="exam_score_badge" class="slider-badge">91%</span>
+                    <button type="button" class="stepper-btn" onclick="stepValue('exam_score', 1)" title="Increase" aria-label="Increase Exam Score">+</button>
+                  </div>
+                </div>
+                <input type="range" id="exam_score" min="0" max="100" step="0.5" value="91" />
+                <div class="slider-limits">
+                  <span>0%</span>
+                  <span>50%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Buttons -->
+          <div class="form-actions" style="margin-top: 24px;">
+            <button type="submit" id="submitBtn" class="btn-primary">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>Predict Placement</span>
+            </button>
+            <button type="button" onclick="resetForm()" class="btn-secondary">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span>Reset</span>
+            </button>
+          </div>
+
+        </form>
+      </section>
+
+      <!-- Right Column: Prediction Results & Insights -->
+      <section class="result-container">
+        
+        <div class="card">
+          <!-- Card Header -->
+          <div class="result-card-header">
+            <span class="result-card-title">Prediction Result</span>
+            <span class="model-tag">DecisionTreeClassifier</span>
+          </div>
+
+          <!-- State 1: Empty Placeholder -->
+          <div id="emptyState" class="state-empty hidden">
+            <div class="empty-icon">
+              <i class="fa-solid fa-brain"></i>
+            </div>
+            <h3>Ready to Evaluate</h3>
+            <p>Fill out the profile on the left or click a preset to generate a placement forecast.</p>
+          </div>
+
+          <!-- State 2: Loading State -->
+          <div id="loadingState" class="state-loading hidden">
+            <div class="spinner"></div>
+            <p>Evaluating Decision Tree rules...</p>
+          </div>
+
+          <!-- State 3: Active Result Display -->
+          <div id="resultDisplay" class="result-display">
+            
+            <!-- Result Banner (Placed / Not Placed) -->
+            <div id="outcomeBanner" class="outcome-banner placed">
+              <div id="outcomeIcon" class="outcome-icon">
+                <i class="fa-solid fa-check"></i>
+              </div>
+              <span id="outcomePill" class="outcome-pill">High Potential Forecast</span>
+              <h2 id="outcomeTitle" class="outcome-title">Placed</h2>
+              <p id="outcomeDesc" class="outcome-desc">
+                Profile exhibits strong academic performance and healthy study patterns.
+              </p>
+            </div>
+
+            <!-- Probability Bar -->
+            <div class="probability-box">
+              <div class="probability-labels">
+                <span>Placement Probability</span>
+                <span id="probabilityValue" class="probability-value">92.5%</span>
+              </div>
+              <div class="progress-track">
+                <div id="probabilityFill" class="progress-fill placed" style="width: 92.5%;"></div>
+              </div>
+            </div>
+
+            <!-- Insights / Recommendations -->
+            <div class="insights-box">
+              <div class="insights-header">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>Key Feedback & Insights</span>
+              </div>
+              <ul id="insightsList" class="insights-list">
+                <!-- Injected via JavaScript -->
+              </ul>
+            </div>
+
+          </div>
+
+          <!-- Error Alert Banner -->
+          <div id="errorBanner" class="error-banner hidden">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="errorMessage">Unable to communicate with the prediction model.</span>
+          </div>
+
+        </div>
+
+        <!-- System Status Bar -->
+        <div class="model-info-card">
+          <span>Decision Tree v1.0 &bull; FastAPI Backend</span>
+          <div class="online-status">
+            <span class="online-dot"></span>
+            <span>API Online</span>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Custom JavaScript Controller -->
+  <script src="/static/script.js"></script>
+</body>
+</html>
