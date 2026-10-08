@@ -1,6 +1,6 @@
 /**
- * Student Placement Prediction - Frontend Controller
- * Handles Theme Toggling (with localStorage), Real-time Slider & Stepper (+ / -) Bindings,
+ * Student Placement Prediction - Frontend Controller (60-30-10 Architecture)
+ * Handles Theme Toggling (with localStorage), Precision Stepper (+ / -) Control,
  * Profile Presets, and Async Form Submission to FastAPI /predict
  */
 
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   initSliders();
   initForm();
-  loadPreset('star'); // Default to high-performance preset on load
+  loadPreset('star'); // Default to high-achiever preset on initial load
 });
 
 /* ==========================================================================
@@ -87,11 +87,11 @@ function stepValue(id, delta) {
   let currentVal = parseFloat(slider.value) || 0;
   let newVal = currentVal + delta;
 
-  // Clamp within bounds
+  // Clamp within boundaries
   if (newVal < cfg.min) newVal = cfg.min;
   if (newVal > cfg.max) newVal = cfg.max;
 
-  // Round to 1 decimal place to prevent floating point inaccuracies
+  // Round to 1 decimal place
   newVal = Math.round(newVal * 10) / 10;
 
   slider.value = newVal;
@@ -156,7 +156,7 @@ function loadPreset(type) {
     }
   });
 
-  // Automatically evaluate preset
+  // Automatically submit and forecast
   submitPrediction();
 }
 
@@ -179,7 +179,7 @@ function initForm() {
 }
 
 async function submitPrediction() {
-  // Collect 10 exact fields required by model
+  // Extract the 10 required features
   const payload = {
     gender: document.getElementById('gender').value,
     branch: document.getElementById('branch').value,
@@ -214,7 +214,7 @@ async function submitPrediction() {
     showState('result');
   } catch (error) {
     console.error('Prediction error:', error);
-    showError(`Failed to get prediction from server: ${error.message}`);
+    showError(`Failed to evaluate model: ${error.message}`);
     showState('empty');
   }
 }
@@ -236,50 +236,50 @@ function renderResult(data, input) {
   const probVal = document.getElementById('probabilityValue');
   const probFill = document.getElementById('probabilityFill');
 
-  // Reset classes
-  banner.className = 'outcome-banner ' + (isPlaced ? 'placed' : 'not-placed');
-  probFill.className = 'progress-fill ' + (isPlaced ? 'placed' : 'not-placed');
+  // Update classes
+  banner.className = 'outcome-status-card ' + (isPlaced ? 'placed' : 'not-placed');
+  probFill.className = 'meter-bar ' + (isPlaced ? 'placed' : 'not-placed');
 
   if (isPlaced) {
     icon.innerHTML = '<i class="fa-solid fa-check"></i>';
     title.textContent = 'Placed';
     pill.textContent = 'High Potential Forecast';
-    desc.textContent = 'Profile exhibits strong academic performance and healthy study patterns suited for campus placement.';
+    desc.textContent = 'Candidate demonstrates strong academic scores and healthy habit metrics meeting placement cutoffs.';
   } else {
     icon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
     title.textContent = 'Not Placed';
     pill.textContent = 'Intervention Advised';
-    desc.textContent = 'Key indicators suggest additional mentoring, technical upskilling, and mock interviews are recommended.';
+    desc.textContent = 'Key indicators suggest extra mentoring, mock interviews, and skill building are recommended.';
   }
 
   probVal.textContent = prob.toFixed(1) + '%';
   probFill.style.width = Math.min(100, Math.max(0, prob)) + '%';
 
-  // Build key insights
+  // Build Key Feedback Insights
   const insightsList = document.getElementById('insightsList');
   insightsList.innerHTML = '';
   const insights = [];
 
   if (input.attendance < 75) {
-    insights.push(`<strong>Attendance (${input.attendance}%)</strong> is below the typical 75% cutoff threshold.`);
+    insights.push(`<strong>Attendance (${input.attendance}%)</strong> is below the recommended 75% eligibility cutoff.`);
   } else {
-    insights.push(`<strong>Consistent Attendance (${input.attendance}%)</strong> positively supports placement eligibility.`);
+    insights.push(`<strong>Strong Attendance (${input.attendance}%)</strong> supports eligibility across campus drives.`);
   }
 
   if (input.study_hours < 4.0) {
-    insights.push(`<strong>Study Hours (${input.study_hours}h/day)</strong> could be increased to reinforce core technical skills.`);
+    insights.push(`<strong>Daily Study (${input.study_hours}h/day)</strong> could be improved to 5–6 hours for technical rounds.`);
   } else {
-    insights.push(`<strong>Dedicated Study Routine (${input.study_hours}h/day)</strong> shows strong discipline.`);
+    insights.push(`<strong>Solid Daily Routine (${input.study_hours}h/day)</strong> shows consistent technical preparation.`);
   }
 
   if (input.exam_score >= 80) {
-    insights.push(`<strong>High Exam Score (${input.exam_score}%)</strong> provides a clear competitive edge.`);
+    insights.push(`<strong>High Final Exam Score (${input.exam_score}%)</strong> provides a clear competitive edge.`);
   } else if (input.exam_score < 60) {
-    insights.push(`<strong>Final Score (${input.exam_score}%)</strong> may require extra revision for shortlist rounds.`);
+    insights.push(`<strong>Final Score (${input.exam_score}%)</strong> may trigger initial shortlist screening flags.`);
   }
 
   if (input.extracurricular === 'Yes') {
-    insights.push(`<strong>Extracurricular engagement</strong> highlights leadership and teamwork abilities.`);
+    insights.push(`<strong>Extracurricular engagement</strong> demonstrates communication and leadership ability.`);
   }
 
   insights.forEach(text => {
